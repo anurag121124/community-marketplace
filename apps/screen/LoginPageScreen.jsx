@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     color: '#333', // Darker text color for better contrast
   },
   description: {
-    lineHeight: 24, // Adjust line spacing for better readability
+    lineHeight: 24,
   },
   button: {
     alignSelf: 'center', // Centers the button horizontally

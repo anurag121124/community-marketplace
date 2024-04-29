@@ -10,6 +10,10 @@ import { FontAwesome } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet } from "react-native";
+import { Platform } from "react-native";
+
+
 
 const Tab = createBottomTabNavigator();
 
@@ -39,7 +43,7 @@ export default function TabNavigation() {
                         </Text>
                     ),
                     tabBarIcon: ({ color, size }) => (
-                        <FontAwesome name="home" size={24} color={color} style={{ padding: 5 }} />
+                        <FontAwesome name="home" size={24} color={color}  style={StyleSheet.icon} />
                     ),
                 }}
             />
@@ -60,7 +64,7 @@ export default function TabNavigation() {
                         </Text>
                     ),
                     tabBarIcon: ({ color, size }) => (
-                        <MaterialIcons name="explore" size={24} color={color} style={{ padding: 5 }} />
+                        <MaterialIcons name="explore" size={24} color={color} style={StyleSheet.icon} />
                     ),
                 }}
             />
@@ -81,7 +85,7 @@ export default function TabNavigation() {
                         </Text>
                     ),
                     tabBarIcon: ({ color, size }) => (
-                        <MaterialIcons name="post-add" size={24} color={color} style={{ padding: 5 }} />
+                        <MaterialIcons name="post-add" size={24} color={color} style={StyleSheet.icon} />
                     ),
                 }}
             />
@@ -102,9 +106,15 @@ export default function TabNavigation() {
                         </Text>
                     ),
                     tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="person-circle" size={24} color={color} style={{ padding: 5 }} />),
+                        <Ionicons name="person-circle" size={24} color={color} style={StyleSheet.icon} />),
                 }}
             />
         </Tab.Navigator>
     );
 }
+
+const styles = StyleSheet.create({
+    icon: {
+        padding: Platform.OS === 'ios' ? 5 : 0, // Adjust padding based on platform
+    },
+});
