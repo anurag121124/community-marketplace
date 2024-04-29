@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, ToastAndroid } from 'react-native';
 import { app } from '../../firebaseconfig';
 import { getFirestore } from 'firebase/firestore';
 import { collection, getDocs } from 'firebase/firestore';
 import { Formik } from 'formik';
 import { StyleSheet, ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker'
+import * as ImagePicker from 'expo-image-picker';
+
 export default function AddPostScreen() {
-  const db = getFirestore(app);
+  const db = getFirestore(app); // Assuming 'app' is defined somewhere
   const [categoryList, setCategoryList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [image, setImage] = useState(null);
@@ -27,6 +29,27 @@ export default function AddPostScreen() {
     // Implement form submission logic here, e.g., save to Firestore
     console.log('Submitted values:', values);
   };
+
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    console.log(result);
+    if (!result.cancelled) {
+      setImage(result.uri);
+    }
+  };
+   
+  const onSubmitMethod =(value)=>{
+    value.image=image;
+    console.log(value)
+  }
+
+
   return (
     <View style={styles.container} className="p-8">
       <Text className="text-[22px] font-bold"> Add New Post</Text>
@@ -41,12 +64,25 @@ export default function AddPostScreen() {
           price: '',
           image: ''
         }}
-        onSubmit={handleSubmit}
+        onSubmit={onSubmitMethod}
+        validate={(values)=>{
+          const errors={}
+            if(!values.title){
+              console.log("Title is not Present");
+              ToastAndroid.show('Title must be There',ToastAndroid.SHORT)
+      
+              errors.name="Title must be there"
+            }
+            return errors
+        }}
       >
-        {({ handleChange, handleBlur, handleSubmit, values }) => (
+        {({ handleChange, handleBlur, handleSubmit, values ,setFieldValue,errors}) => (
           <View>
-            <TouchableOpacity onPress={()=>console.log("Image Click")}>
-            <Image source={require("../../assets/images/placeholder-image.webp")} style={{ width: 100, height: 100,borderRadius:15 }} />
+            <TouchableOpacity onPress={pickImage}>
+              {image ?
+                <Image source={{ uri: image }} style={{ width: 100, height: 100, borderRadius: 15 }} /> :
+                <Image source={require("../../assets/images/placeholder-image.webp")} style={{ width: 100, height: 100, borderRadius: 15 }} />
+              }
             </TouchableOpacity>
 
             <TextInput
