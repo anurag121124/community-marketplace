@@ -5,9 +5,9 @@ import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import { Formik } from 'formik';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
-import { getStorage, ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { Button } from 'react-native';
-
+import { AntDesign } from '@expo/vector-icons';
 export default function AddPostScreen() {
   const db = getFirestore(app);
   const [categoryList, setCategoryList] = useState([]);
@@ -44,23 +44,22 @@ export default function AddPostScreen() {
       setImage(result.assets[0].uri);
     }
   };
-
   const onSubmitMethod = async (values) => {
     try {
       if (!image) {
         throw new Error('Please select an image');
       }
-
+      const timestamp = Date.now(); // Get current timestamp
       const resp = await fetch(image);
       const blob = await resp.blob();
-      const storageRef = ref(getStorage(app), `communityPost_${Date.now()}.jpg`);
-
+      const filename = `communityPost/${timestamp}.jpg`; // Construct filename
+      const storageRef = ref(getStorage(app), filename);
       setUploading(true);
-
-      const snapshot = await uploadBytes(storageRef, blob);
+      await uploadBytes(storageRef, blob);
+      const downloadUrl = await getDownloadURL(storageRef);
+      console.log(downloadUrl);
       console.log('Uploaded a blob or file!');
       setUploading(false);
-
     } catch (error) {
       console.error('Error uploading image:', error.message);
       setUploading(false);
@@ -70,6 +69,7 @@ export default function AddPostScreen() {
   const removeImage = () => {
     setImage(null);
   };
+  
 
   return (
     <View style={styles.container}>
@@ -97,9 +97,15 @@ export default function AddPostScreen() {
           <View>
             <TouchableOpacity onPress={pickImage}>
               {image ? (
-                <Image source={{ uri: image }} style={styles.image} />
+                <View style={styles.imageContainer}>
+                  <AntDesign name="closecircle" size={24} color="black" className="pt-10 p-5" onPress={removeImage} />
+                  <Image source={{ uri: image }} style={{ width: 100, height: 100, borderRadius: 15 }} />
+                </View>
               ) : (
-                <Button title="Pick an image from camera roll" onPress={pickImage} />
+                <Image
+                  source={require('../../assets/images/placeholder-image.webp')}
+                  style={{ width: 100, height: 100, borderRadius: 15 }}
+                />
               )}
             </TouchableOpacity>
 
@@ -125,7 +131,7 @@ export default function AddPostScreen() {
                 ))}
               </Picker>
             </View>
-            
+
             <TextInput
               style={styles.input}
               placeholder='Description'
@@ -134,7 +140,7 @@ export default function AddPostScreen() {
               numberOfLines={5}
             />
 
-              <TextInput
+            <TextInput
               style={styles.input}
               placeholder='Price'
               value={values.price}
@@ -144,8 +150,9 @@ export default function AddPostScreen() {
             {/* Add TextInput components for other fields */}
 
             {errors.title && <Text style={styles.errorText}>{errors.title}</Text>}
-            {/* Add error messages for other fields if necessary */}
-
+            {errors.price && <Text style={styles.errorText}>{errors.price}</Text>}
+            {errors.dec && <Text style={styles.errorText}>{errors.dec}</Text>}
+            {errors.category && <Text style={styles.errorText}>{errors.category}</Text>}
             <TouchableOpacity
               style={styles.button}
               onPress={handleSubmit}
@@ -171,7 +178,7 @@ export default function AddPostScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+    padding: 40,
   },
   title: {
     fontSize: 22,
@@ -196,6 +203,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 17,
     fontSize: 17,
     marginBottom: 10,
+    marginTop: 5
   },
   button: {
     borderRadius: 10,
@@ -225,5 +233,13 @@ const styles = StyleSheet.create({
     color: 'red',
     marginBottom: 5,
   },
+  removeButton: {
+    backgroundColor: 'red',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+    marginTop: 5,
+  },
+
 });
 
