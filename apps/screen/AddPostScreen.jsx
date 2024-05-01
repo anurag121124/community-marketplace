@@ -1,24 +1,32 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ToastAndroid, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, ToastAndroid, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { app } from '../../firebaseconfig';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, addDoc } from 'firebase/firestore'; // Import addDoc
 import { Formik } from 'formik';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { Button } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
+import { useUser } from '@clerk/clerk-expo';
+
+
 export default function AddPostScreen() {
+
   const db = getFirestore(app);
   const [categoryList, setCategoryList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState(null);
   const [image, setImage] = useState(null);
+  const { user } = useUser();
+
+
 
   useEffect(() => {
     getCategoryList();
   }, []);
+
 
   const getCategoryList = async () => {
     try {
@@ -31,6 +39,7 @@ export default function AddPostScreen() {
       setLoading(false);
     }
   };
+
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -60,16 +69,31 @@ export default function AddPostScreen() {
       console.log(downloadUrl);
       console.log('Uploaded a blob or file!');
       setUploading(false);
+      // Add document to Firestore
+      const docRef = await addDoc(collection(db, 'UserPost'), {
+        ...values,
+        image: downloadUrl,
+        userName: user.fullName,
+        userEmail: user.primaryEmailAddress.emailAddress,
+        userImage: user.imageUrl,
+      });
+      if (docRef.id) {
+        console.log("Document Added");
+        Alert.alert('sucess!!!', 'Post Added Scuessfully')
+
+      }
     } catch (error) {
       console.error('Error uploading image:', error.message);
       setUploading(false);
-      ToastAndroid.show(error.message, ToastAndroid.SHORT);
+      Alert.alert('Failed!!!', 'Post is not added')
+
+
     }
   };
   const removeImage = () => {
     setImage(null);
   };
-  
+
 
   return (
     <View style={styles.container}>
@@ -83,6 +107,12 @@ export default function AddPostScreen() {
           category: '',
           address: '',
           price: '',
+          userName: '',
+          userEmail: '',
+          userPhone: '',
+          userImage: '',
+
+
         }}
         onSubmit={onSubmitMethod}
         validate={(values) => {
@@ -154,11 +184,21 @@ export default function AddPostScreen() {
             {errors.dec && <Text style={styles.errorText}>{errors.dec}</Text>}
             {errors.category && <Text style={styles.errorText}>{errors.category}</Text>}
             <TouchableOpacity
-              style={styles.button}
+              style ={{backgroundColor:loading?'#ccc':'#007bff', borderRadius: 10,
+              padding: 10,
+              backgroundColor: '#3377FF',
+              marginTop: 20,
+              alignItems: 'center',}}
+              disabled={loading}
               onPress={handleSubmit}
             >
-              <Text style={styles.buttonText}>Submit</Text>
+              {loading ? (
+                <ActivityIndicator color='#fff' />
+              ) : (
+                <Text style={styles.buttonText}>Submit</Text>
+              )}
             </TouchableOpacity>
+
           </View>
         )}
       </Formik>
@@ -215,6 +255,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 18,
+
   },
   uploadedImageContainer: {
     alignItems: 'center',
