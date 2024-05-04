@@ -9,6 +9,7 @@ import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { Button } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { useUser } from '@clerk/clerk-expo';
+import { ScrollView } from "react-native";
 
 
 export default function AddPostScreen() {
@@ -20,6 +21,7 @@ export default function AddPostScreen() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState(null);
   const [image, setImage] = useState(null);
   const { user } = useUser();
+
 
 
 
@@ -96,6 +98,8 @@ export default function AddPostScreen() {
 
 
   return (
+    <ScrollView style={styles.scrollView}>
+
     <View style={styles.container}>
       <Text style={styles.title}>Add New Post</Text>
       <Text style={styles.subtitle}>Create a new post and start selling</Text>
@@ -212,6 +216,8 @@ export default function AddPostScreen() {
         </View>
       )}
     </View>
+    </ScrollView> 
+
   );
 }
 
@@ -280,6 +286,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 5,
     marginTop: 5,
+  },
+  scrollView: {
+   
   },
 
 });

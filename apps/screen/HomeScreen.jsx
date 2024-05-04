@@ -5,6 +5,7 @@ import Slider from "../Components/Slider";
 import { getFirestore, collection, getDocs } from "firebase/firestore"; // Importing necessary functions
 import { app } from "../../firebaseconfig";
 
+
 export default function HomeScreen() {
   const db = getFirestore(app);
   const [sliderList, setSliderList] = useState([]);
@@ -23,9 +24,10 @@ export default function HomeScreen() {
   }, [db]); // Dependency array added with db
 
   return (
-    <View style={{ flex: 1, backgroundColor: "white", padding: 10 }}>
+    <View style={{ flex: 1, backgroundColor: "white", padding: 10 }} className ="border-solid shadow-lg">
       <Header />
       <Slider sliderList={sliderList} />
+      
     </View>
   );
 }
